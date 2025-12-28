@@ -12,6 +12,9 @@ import {
   CreditCard,
   BarChart3,
   Settings,
+  FileBox,
+  Wrench,
+  Landmark,
 } from 'lucide-react'
 
 const navigation = [
@@ -22,6 +25,9 @@ const navigation = [
   { name: 'Rent', href: '/rent', icon: DollarSign },
   { name: 'Transactions', href: '/transactions', icon: CreditCard },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Documents', href: '/documents', icon: FileBox },
+  { name: 'Maintenance', href: '/maintenance', icon: Wrench },
+  { name: 'Banking', href: '/banking', icon: Landmark },
 ]
 
 const secondaryNavigation = [
