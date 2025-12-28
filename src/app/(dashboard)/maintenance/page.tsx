@@ -281,7 +281,7 @@ function CreateMaintenanceModal({ onClose }: { onClose: () => void }) {
     description: '',
     category: 'other',
     priority: 'medium',
-    property: '',
+    rental_property: '',
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -294,7 +294,7 @@ function CreateMaintenanceModal({ onClose }: { onClose: () => void }) {
   })
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.property) return
+    if (!formData.title || !formData.rental_property) return
 
     setSubmitting(true)
     try {
@@ -327,8 +327,8 @@ function CreateMaintenanceModal({ onClose }: { onClose: () => void }) {
           <div>
             <label className="text-sm font-medium">Property</label>
             <Select
-              value={formData.property}
-              onValueChange={(v) => setFormData({ ...formData, property: v })}
+              value={formData.rental_property}
+              onValueChange={(v) => setFormData({ ...formData, rental_property: v })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select property" />
@@ -336,7 +336,7 @@ function CreateMaintenanceModal({ onClose }: { onClose: () => void }) {
               <SelectContent>
                 {properties?.map((p: any) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.name}
+                    {p.name || p.street_address}
                   </SelectItem>
                 ))}
               </SelectContent>
