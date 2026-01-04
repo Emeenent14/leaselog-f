@@ -4,6 +4,7 @@ const nextConfig = {
     domains: [
       'localhost',
       'leaselog-files.s3.amazonaws.com',
+      'images.unsplash.com',
     ],
   },
 }
