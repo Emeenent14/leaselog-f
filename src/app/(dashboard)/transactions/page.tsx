@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -125,8 +125,12 @@ export default function TransactionsPage() {
     createMutation.mutate(formData)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -232,28 +236,35 @@ export default function TransactionsPage() {
                 <div>
                   <Label htmlFor="type">Type</Label>
                   <Select
-                    id="type"
-                    name="type"
                     value={formData.type}
-                    onChange={handleChange}
-                    options={[
-                      { value: 'income', label: 'Income' },
-                      { value: 'expense', label: 'Expense' },
-                    ]}
-                  />
+                    onValueChange={(value) => handleSelectChange('type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income">Income</SelectItem>
+                      <SelectItem value="expense">Expense</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
-                    id="category"
-                    name="category"
                     value={formData.category}
-                    onChange={handleChange}
-                    options={[
-                      { value: '', label: 'Select category' },
-                      ...filteredCategories.map((c) => ({ value: c.id, label: c.name })),
-                    ]}
-                  />
+                    onValueChange={(value) => handleSelectChange('category', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredCategories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="amount">Amount *</Label>
@@ -284,25 +295,38 @@ export default function TransactionsPage() {
                 <div>
                   <Label htmlFor="property">Property</Label>
                   <Select
-                    id="property"
-                    name="property"
                     value={formData.property}
-                    onChange={handleChange}
-                    options={[
-                      { value: '', label: 'Select property' },
-                      ...properties.map((p: any) => ({ value: p.id, label: p.street_address })),
-                    ]}
-                  />
+                    onValueChange={(value) => handleSelectChange('property', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {properties.map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.street_address}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="payment_method">Payment Method</Label>
                   <Select
-                    id="payment_method"
-                    name="payment_method"
                     value={formData.payment_method}
-                    onChange={handleChange}
-                    options={paymentMethods}
-                  />
+                    onValueChange={(value) => handleSelectChange('payment_method', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="reference_number">Reference #</Label>
@@ -348,12 +372,23 @@ export default function TransactionsPage() {
             className="pl-10"
           />
         </div>
-        <Select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          options={typeOptions}
-          className="w-40"
-        />
+        <div className="w-40">
+          <Select
+            value={typeFilter}
+            onValueChange={setTypeFilter}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              {typeOptions.map((option) => (
+                <SelectItem key={option.value || 'all'} value={option.value || 'all'}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Loading */}

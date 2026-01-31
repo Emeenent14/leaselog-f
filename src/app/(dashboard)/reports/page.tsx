@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart3, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
@@ -75,9 +75,19 @@ export default function ReportsPage() {
         <div className="mt-4 sm:mt-0 w-32">
           <Select
             value={year}
-            onChange={(e) => setYear(e.target.value)}
-            options={yearOptions}
-          />
+            onValueChange={setYear}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

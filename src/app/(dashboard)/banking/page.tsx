@@ -220,7 +220,7 @@ export default function BankingPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant={connection.status === 'active' ? 'default' : 'destructive'}>
+                        <Badge variant={connection.status === 'active' ? 'default' : 'danger'}>
                           {connection.status}
                         </Badge>
                         {connection.last_synced_at && (

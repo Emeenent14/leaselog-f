@@ -137,31 +137,28 @@ export default function TenantPortalPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-6">
             <button
-              className={`py-4 border-b-2 ${
-                activeTab === 'overview'
+              className={`py-4 border-b-2 ${activeTab === 'overview'
                   ? 'border-primary font-medium'
                   : 'border-transparent text-muted-foreground'
-              }`}
+                }`}
               onClick={() => setActiveTab('overview')}
             >
               Overview
             </button>
             <button
-              className={`py-4 border-b-2 ${
-                activeTab === 'payments'
+              className={`py-4 border-b-2 ${activeTab === 'payments'
                   ? 'border-primary font-medium'
                   : 'border-transparent text-muted-foreground'
-              }`}
+                }`}
               onClick={() => setActiveTab('payments')}
             >
               Payments
             </button>
             <button
-              className={`py-4 border-b-2 ${
-                activeTab === 'maintenance'
+              className={`py-4 border-b-2 ${activeTab === 'maintenance'
                   ? 'border-primary font-medium'
                   : 'border-transparent text-muted-foreground'
-              }`}
+                }`}
               onClick={() => setActiveTab('maintenance')}
             >
               Maintenance
@@ -264,7 +261,7 @@ function OverviewTab({ sessionToken }: { sessionToken: string }) {
                   </p>
                 )}
               </div>
-              <Badge variant={nextPayment.status === 'overdue' ? 'destructive' : 'secondary'}>
+              <Badge variant={nextPayment.status === 'overdue' ? 'danger' : 'secondary'}>
                 {nextPayment.status}
               </Badge>
             </div>

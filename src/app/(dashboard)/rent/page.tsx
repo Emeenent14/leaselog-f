@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -214,12 +214,23 @@ export default function RentPaymentsPage() {
 
       {/* Filter */}
       <div className="mb-6">
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          options={statusOptions}
-          className="w-40"
-        />
+        <div className="w-40">
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value || 'all'} value={option.value || 'all'}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Payment Modal */}
@@ -261,11 +272,20 @@ export default function RentPaymentsPage() {
                 <div>
                   <Label htmlFor="payment_method">Payment Method</Label>
                   <Select
-                    id="payment_method"
                     value={paymentData.payment_method}
-                    onChange={(e) => setPaymentData((p) => ({ ...p, payment_method: e.target.value }))}
-                    options={paymentMethods}
-                  />
+                    onValueChange={(value) => setPaymentData((p) => ({ ...p, payment_method: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

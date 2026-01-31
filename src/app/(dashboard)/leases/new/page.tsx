@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 
@@ -70,15 +70,7 @@ export default function NewLeasePage() {
   const properties = propertiesData || []
   const tenants = tenantsData || []
 
-  const propertyOptions = [
-    { value: '', label: 'Select a property' },
-    ...properties.map((p: any) => ({ value: p.id, label: p.street_address })),
-  ]
 
-  const tenantOptions = [
-    { value: '', label: 'Select a tenant' },
-    ...tenants.map((t: any) => ({ value: t.id, label: `${t.first_name} ${t.last_name}` })),
-  ]
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -119,11 +111,18 @@ export default function NewLeasePage() {
     createMutation.mutate(formData)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+    }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
     }))
   }
 
@@ -151,24 +150,38 @@ export default function NewLeasePage() {
                 <div>
                   <Label htmlFor="rental_property">Property *</Label>
                   <Select
-                    id="rental_property"
-                    name="rental_property"
                     value={formData.rental_property}
-                    onChange={handleChange}
-                    options={propertyOptions}
-                    required
-                  />
+                    onValueChange={(value) => handleSelectChange('rental_property', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {properties.map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.street_address}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="tenant">Tenant *</Label>
                   <Select
-                    id="tenant"
-                    name="tenant"
                     value={formData.tenant}
-                    onChange={handleChange}
-                    options={tenantOptions}
-                    required
-                  />
+                    onValueChange={(value) => handleSelectChange('tenant', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a tenant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tenants.map((t: any) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.first_name} {t.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>
@@ -184,12 +197,20 @@ export default function NewLeasePage() {
                 <div>
                   <Label htmlFor="lease_type">Lease Type</Label>
                   <Select
-                    id="lease_type"
-                    name="lease_type"
                     value={formData.lease_type}
-                    onChange={handleChange}
-                    options={leaseTypes}
-                  />
+                    onValueChange={(value) => handleSelectChange('lease_type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {leaseTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="start_date">Start Date *</Label>
@@ -298,12 +319,20 @@ export default function NewLeasePage() {
                 <div>
                   <Label htmlFor="late_fee_type">Late Fee Type</Label>
                   <Select
-                    id="late_fee_type"
-                    name="late_fee_type"
                     value={formData.late_fee_type}
-                    onChange={handleChange}
-                    options={lateFeeTypes}
-                  />
+                    onValueChange={(value) => handleSelectChange('late_fee_type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lateFeeTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="late_fee_amount">
