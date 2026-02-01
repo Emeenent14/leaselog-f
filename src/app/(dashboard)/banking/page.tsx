@@ -1,4 +1,5 @@
 'use client'
+// Force redeploy
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -105,21 +106,19 @@ export default function BankingPage() {
       {/* Tabs */}
       <div className="flex gap-2 border-b">
         <button
-          className={`px-4 py-2 -mb-px ${
-            activeTab === 'overview'
+          className={`px-4 py-2 -mb-px ${activeTab === 'overview'
               ? 'border-b-2 border-primary font-medium'
               : 'text-muted-foreground'
-          }`}
+            }`}
           onClick={() => setActiveTab('overview')}
         >
           Overview
         </button>
         <button
-          className={`px-4 py-2 -mb-px ${
-            activeTab === 'transactions'
+          className={`px-4 py-2 -mb-px ${activeTab === 'transactions'
               ? 'border-b-2 border-primary font-medium'
               : 'text-muted-foreground'
-          }`}
+            }`}
           onClick={() => setActiveTab('transactions')}
         >
           Transactions ({pendingTransactions?.length || 0} pending)
@@ -337,9 +336,8 @@ function TransactionsTab() {
                   </div>
                 </TableCell>
                 <TableCell>{txn.account_name}</TableCell>
-                <TableCell className={`text-right font-medium ${
-                  txn.amount > 0 ? 'text-red-600' : 'text-green-600'
-                }`}>
+                <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-red-600' : 'text-green-600'
+                  }`}>
                   {txn.amount > 0 ? '-' : '+'}${Math.abs(txn.amount).toFixed(2)}
                 </TableCell>
                 <TableCell className="text-right">
