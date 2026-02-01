@@ -1,7 +1,14 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-const API_BASE_URL = BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_URL}/api/v1`
+const getBaseUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`
+  }
+  return url.endsWith('/api/v1') ? url : `${url}/api/v1`
+}
+
+const API_BASE_URL = getBaseUrl()
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
