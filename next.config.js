@@ -1,10 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'localhost',
-      'leaselog-files.s3.amazonaws.com',
-      'images.unsplash.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'leaselog-files.s3.amazonaws.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      }
     ],
   },
 }

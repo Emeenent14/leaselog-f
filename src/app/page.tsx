@@ -2,132 +2,54 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { useAuthStore } from '@/stores/auth'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Spotlight } from '@/components/ui/spotlight'
-import { FlipWords } from '@/components/ui/flip-words'
-import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards'
-import { CardContainer, CardBody, CardItem } from '@/components/ui/3d-card'
-import { FAQ } from '@/components/ui/faq'
 import {
-  Building2,
-  Users,
-  FileText,
-  DollarSign,
-  BarChart3,
-  CheckCircle2,
   ArrowRight,
-  Bell,
-  Receipt,
-  TrendingUp,
+  Check
 } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-const testimonials = [
-  {
-    quote: "I used to spend hours every month tracking rent payments in Excel. Now it takes me 5 minutes. LeaseLog paid for itself the first month.",
-    name: "David R.",
-    title: "12 units in Chicago",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    quote: "The lease expiration alerts alone are worth it. I almost lost a great tenant because I forgot to start the renewal conversation. Never again.",
-    name: "Sarah M.",
-    title: "6 units in Austin",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    quote: "Tax time used to be a nightmare. Now I just export my income and expenses report and hand it to my accountant. Done in 10 minutes.",
-    name: "Michael T.",
-    title: "8 units in Denver",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    quote: "Finally, a property management tool that doesn't require a PhD to use. Simple, clean, and does exactly what I need.",
-    name: "Jennifer K.",
-    title: "15 units in Seattle",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-  },
-  {
-    quote: "I manage properties across three states. LeaseLog keeps everything organized in one place. Can't imagine going back to spreadsheets.",
-    name: "Robert L.",
-    title: "22 units across TX, OK, AR",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-  },
-]
+const fadeInUp: any = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.8,
+      ease: [0.2, 0.65, 0.3, 0.9],
+    },
+  }),
+}
 
-const faqItems = [
-  {
-    question: "How long is the free trial?",
-    answer: "You get 14 days to try LeaseLog completely free. No credit card required to start. You'll have full access to all features during the trial period.",
-  },
-  {
-    question: "Can I import my existing data?",
-    answer: "Yes! You can import properties, tenants, and lease information from spreadsheets (CSV/Excel). We also offer free migration assistance for larger portfolios.",
-  },
-  {
-    question: "Is my data secure?",
-    answer: "Absolutely. We use bank-level 256-bit SSL encryption, and your data is stored on secure AWS servers with daily backups. We never share or sell your information.",
-  },
-  {
-    question: "Can I cancel anytime?",
-    answer: "Yes, you can cancel your subscription at any time. No long-term contracts, no cancellation fees. Your data remains accessible for 30 days after cancellation.",
-  },
-  {
-    question: "Do you offer support?",
-    answer: "Yes! All plans include email support. Pro and Business plans include priority support with faster response times. We also have extensive documentation and video tutorials.",
-  },
-  {
-    question: "Can multiple people access my account?",
-    answer: "The Business plan includes multi-user access, allowing you to add team members with different permission levels. Starter and Pro plans are single-user.",
-  },
-]
-
-const features = [
-  {
-    icon: Building2,
-    title: "Properties & Units",
-    description: "Add single-family homes, duplexes, or apartment buildings. Track each unit separately.",
-    color: "bg-blue-500",
-  },
-  {
-    icon: Users,
-    title: "Tenant Records",
-    description: "Store contact info, lease terms, payment history, and notes all in one place.",
-    color: "bg-green-500",
-  },
-  {
-    icon: FileText,
-    title: "Lease Management",
-    description: "Track dates, rent amounts, and terms. Get alerts before leases expire.",
-    color: "bg-amber-500",
-  },
-  {
-    icon: DollarSign,
-    title: "Rent Tracking",
-    description: "See who's paid, who's late, and who owes what. Automatic late fee calculations.",
-    color: "bg-blue-500",
-  },
-  {
-    icon: Receipt,
-    title: "Expense Logging",
-    description: "Log repairs, maintenance, taxes, and insurance. Categorize by property.",
-    color: "bg-red-500",
-  },
-  {
-    icon: BarChart3,
-    title: "Financial Reports",
-    description: "Income statements, expense breakdowns, and profit/loss. Export to PDF or CSV.",
-    color: "bg-green-500",
-  },
-]
+const letterAnim: any = {
+  hidden: { y: "100%" },
+  visible: (i: number) => ({
+    y: 0,
+    transition: {
+      delay: i * 0.03,
+      duration: 0.5,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  }),
+}
 
 export default function LandingPage() {
   const router = useRouter()
   const { isAuthenticated, isLoading } = useAuthStore()
   const [showPage, setShowPage] = useState(false)
+  const containerRef = useRef(null)
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  })
+
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"])
 
   useEffect(() => {
     if (!isLoading) {
@@ -141,551 +63,277 @@ export default function LandingPage() {
 
   if (isLoading || !showPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FBF9F6]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]" />
       </div>
     )
   }
 
-  const flipWords = ["spreadsheets", "sticky notes", "mental math", "chaos"]
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">LeaseLog</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <Link href="/features" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
-                Features
-              </Link>
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
-                Pricing
-              </Link>
-              <Link href="/faq" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
-                FAQ
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Start Free</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div ref={containerRef} className="min-h-screen bg-[#FBF9F6] text-[#2D2D2D] selection:bg-[#2D2D2D] selection:text-[#FBF9F6] pt-20 overflow-hidden">
 
-      {/* Hero Section with Spotlight */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gray-950">
-        <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-gray-800 text-gray-300 text-sm font-medium px-4 py-2 rounded-full mb-8"
-            >
-              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-              Built for landlords who self-manage
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white tracking-tight leading-tight"
-            >
-              Stop chasing rent.
-              <span className="block text-blue-400 mt-2">Start tracking it.</span>
-            </motion.h1>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-8 text-xl text-gray-400"
-            >
-              <span>LeaseLog replaces your </span>
-              <FlipWords words={flipWords} className="text-blue-400" />
-            </motion.div>
+      {/* Hero Section - Split Layout with Staggered Type */}
+      <section className="px-6 py-12 md:py-20 lg:py-32 min-h-[90vh] flex items-center">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            custom={0}
+            variants={fadeInUp}
+          >
+            <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl leading-[1.05] text-[#1A1A1A] mb-8 tracking-tighter overflow-hidden">
+              <span className="block overflow-hidden">
+                <motion.span variants={letterAnim} custom={0} className="block">Quietly powerful</motion.span>
+              </span>
+              <span className="block overflow-hidden italic text-[#6B6B6B]">
+                <motion.span variants={letterAnim} custom={10} className="block">property management.</motion.span>
+              </span>
+            </h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-4 text-lg text-gray-500 max-w-2xl mx-auto"
+              variants={fadeInUp}
+              custom={3}
+              className="font-sans text-lg md:text-xl text-[#555555] leading-relaxed mb-10 max-w-lg"
             >
-              Track every property, tenant, and payment in one place.
-              Know exactly who owes what, when leases expire, and where your money goes.
+              LeaseLog brings clarity to your rental business. Track payments,
+              manage tenants, and organize expenses—all in one place that feels like home.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
+              variants={fadeInUp}
+              custom={4}
+              className="flex flex-col sm:flex-row gap-4"
             >
               <Link href="/register">
-                <Button size="lg" className="w-full sm:w-auto text-base px-8 bg-blue-600 hover:bg-blue-700">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button className="h-14 w-full sm:w-auto px-10 rounded-full bg-[#1A1A1A] hover:bg-black text-[#FBF9F6] font-sans text-xs tracking-widest uppercase font-semibold transition-transform hover:scale-105">
+                  Try LeaseLog
                 </Button>
               </Link>
               <Link href="/features">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 border-gray-700 text-gray-300 hover:bg-gray-800">
-                  See Features
+                <Button variant="ghost" className="h-14 w-full sm:w-auto px-10 rounded-full hover:bg-[#E5E5E5] text-[#1A1A1A] font-sans text-xs tracking-widest font-semibold flex items-center justify-center gap-2 group">
+                  How it works <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="mt-4 text-sm text-gray-600"
+            <motion.div
+              variants={fadeInUp}
+              custom={5}
+              className="mt-12 flex items-center gap-6 text-[#666666] text-sm font-medium"
             >
-              No credit card required. Set up in 5 minutes.
-            </motion.p>
-          </div>
-        </div>
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#FBF9F6] bg-gray-200 overflow-hidden relative shadow-sm">
+                    <Image
+                      src={`https://images.unsplash.com/photo-${[
+                        '1534528741775-53994a69daeb',
+                        '1506794778202-cad84cf45f1d',
+                        '1507003211169-0a1dd7228f2d',
+                        '1438761681033-6461ffad8d80'
+                      ][i - 1]}?w=100&h=100&fit=crop&crop=faces`}
+                      alt="User"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1 items-center">
+                <span className="text-[#1A1A1A] font-bold">2,000+</span>
+                <span>landlords trust us</span>
+              </div>
+            </motion.div>
+          </motion.div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-      </section>
-
-      {/* Property Types with 3D Cards */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Manage any type of rental property
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">From single-family homes to apartment buildings</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <CardContainer className="py-6">
-              <CardBody className="bg-gray-50 relative group/card border-gray-200 w-auto h-auto rounded-xl p-6 border">
-                <CardItem translateZ="50" className="text-xl font-bold text-gray-900">
-                  Single-Family Homes
-                </CardItem>
-                <CardItem as="p" translateZ="60" className="text-gray-500 text-sm max-w-sm mt-2">
-                  Track one property or twenty. Perfect for individual landlords.
-                </CardItem>
-                <CardItem translateZ="100" className="w-full mt-4">
-                  <Image
-                    src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop"
-                    height={400}
-                    width={600}
-                    className="h-48 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                    alt="Single family home"
-                  />
-                </CardItem>
-              </CardBody>
-            </CardContainer>
-
-            <CardContainer className="py-6">
-              <CardBody className="bg-gray-50 relative group/card border-gray-200 w-auto h-auto rounded-xl p-6 border">
-                <CardItem translateZ="50" className="text-xl font-bold text-gray-900">
-                  Duplexes & Triplexes
-                </CardItem>
-                <CardItem as="p" translateZ="60" className="text-gray-500 text-sm max-w-sm mt-2">
-                  Separate units, one dashboard. Track each unit independently.
-                </CardItem>
-                <CardItem translateZ="100" className="w-full mt-4">
-                  <Image
-                    src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=600&h=400&fit=crop"
-                    height={400}
-                    width={600}
-                    className="h-48 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                    alt="Duplex"
-                  />
-                </CardItem>
-              </CardBody>
-            </CardContainer>
-
-            <CardContainer className="py-6">
-              <CardBody className="bg-gray-50 relative group/card border-gray-200 w-auto h-auto rounded-xl p-6 border">
-                <CardItem translateZ="50" className="text-xl font-bold text-gray-900">
-                  Apartment Buildings
-                </CardItem>
-                <CardItem as="p" translateZ="60" className="text-gray-500 text-sm max-w-sm mt-2">
-                  Scale to any portfolio size. Built to grow with you.
-                </CardItem>
-                <CardItem translateZ="100" className="w-full mt-4">
-                  <Image
-                    src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&h=400&fit=crop"
-                    height={400}
-                    width={600}
-                    className="h-48 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                    alt="Apartment building"
-                  />
-                </CardItem>
-              </CardBody>
-            </CardContainer>
-          </div>
+          {/* Right Side - Parallax Lifestyle Image */}
+          <motion.div
+            style={{ y }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.2, ease: [0.2, 0.65, 0.3, 0.9] }}
+            className="relative aspect-[4/5] md:aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-[#1A1A1A]/5"
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=2070&auto=format&fit=crop"
+              alt="Modern living room interior"
+              fill
+              className="object-cover scale-110" // scale for subtle zoom
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent mix-blend-multiply" />
+          </motion.div>
         </div>
       </section>
 
-      {/* Features Section - Clean Grid */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Everything in one place
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              No more juggling spreadsheets, apps, and paper trails.
-            </p>
+      {/* Intro Section - Human Connection */}
+      <section className="py-32 px-6 bg-white border-t border-[#E5E5E5]/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="font-serif text-3xl md:text-5xl text-[#1A1A1A] mb-8 leading-tight tracking-tight"
+          >
+            Software that feels as comfortable as your favorite chair.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="font-sans text-lg md:text-xl text-[#555555] leading-relaxed max-w-2xl mx-auto"
+          >
+            We believe property management shouldn't feel like a chore. That's why we designed LeaseLog to be inviting, simple, and calm. It's not just a tool; it's a better way to live your work.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Dashboard Preview - Floating Glass */}
+      <section className="px-6 py-20 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="rounded-3xl border border-[#E5E5E5] bg-[#FAFAFA] p-4 md:p-8 shadow-2xl shadow-black/5"
+          >
+            {/* Simple Abstract Interface Overlaying a Desk Image */}
+            <div className="relative aspect-[16/9] w-full bg-[#FAFAFA] rounded-xl overflow-hidden border border-[#E5E5E5]">
+              <Image
+                src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop"
+                alt="Office Desk"
+                fill
+                className="object-cover opacity-20 hover:scale-105 transition-transform duration-[20s]"
+              />
+              <div className="absolute inset-0 flex items-center justify-center p-8">
+                <div className="bg-white/95 backdrop-blur-xl shadow-xl p-12 max-w-3xl w-full border border-white/50 rounded-2xl text-center space-y-8 hover:-translate-y-1 transition-transform duration-500">
+                  <div className="font-serif text-3xl text-[#1A1A1A]">Good morning, Sarah</div>
+                  <div className="grid grid-cols-3 gap-8 text-[#2D2D2D]">
+                    <div className="p-6 bg-[#FBF9F6] rounded-xl border border-[#F0F0F0]">
+                      <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-2 font-bold">Properties</div>
+                      <div className="text-4xl font-serif">12</div>
+                    </div>
+                    <div className="p-6 bg-[#FBF9F6] rounded-xl border border-[#F0F0F0]">
+                      <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-2 font-bold">Tenants</div>
+                      <div className="text-4xl font-serif">24</div>
+                    </div>
+                    <div className="p-6 bg-[#FBF9F6] rounded-xl border border-[#F0F0F0]">
+                      <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-2 font-bold">Revenue</div>
+                      <div className="text-4xl font-serif">$28k</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features - Bento Grid Style */}
+      <section className="py-32 px-6 border-t border-[#E5E5E5] bg-[#FBF9F6]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-20 items-start mb-20">
+            <div>
+              <h2 className="font-serif text-5xl text-[#1A1A1A] mb-8 leading-tight">
+                Everything you need,<br />nothing you don't.
+              </h2>
+              <p className="font-sans text-lg text-[#555555] leading-relaxed max-w-md">
+                We stripped away the clutter found in traditional software.
+                What's left is a tool that feels as simple as pen and paper, but works like magic.
+              </p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, i) => (
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: "Tenant Tracking", desc: "A single source of truth for every lease.", icon: "📝" },
+              { title: "Financial Reports", desc: "Tax-ready income statements in one click.", icon: "📊" },
+              { title: "Automatic Alerts", desc: "Never miss a renewal or late payment.", icon: "🔔" },
+              { title: "Document Storage", desc: "Keep all your contracts safe and sound.", icon: "🗂️" },
+              { title: "Maintenance", desc: "Track repairs and vendor contacts easily.", icon: "🔧" },
+              { title: "Mobile Ready", desc: "Manage your portfolio from anywhere.", icon: "📱" },
+            ].map((feature, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all"
+                transition={{ delay: i * 0.1 }}
+                className="group bg-white p-8 rounded-2xl border border-[#E5E5E5]/60 hover:border-[#1A1A1A]/10 hover:shadow-lg hover:shadow-black/5 transition-all duration-300"
               >
-                <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-6`}>
-                  <feature.icon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <div className="text-3xl mb-6">{feature.icon}</div>
+                <h3 className="font-serif text-xl text-[#1A1A1A] mb-3 group-hover:text-black transition-colors">{feature.title}</h3>
+                <p className="font-sans text-[#666666] text-sm leading-relaxed">{feature.desc}</p>
               </motion.div>
             ))}
           </div>
-
-          <div className="text-center mt-12">
-            <Link href="/features">
-              <Button variant="outline" size="lg">
-                View All Features
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Dashboard Preview */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Your dashboard shows what matters
-              </h2>
-              <p className="mt-4 text-lg text-gray-600">
-                Open LeaseLog and immediately see who's late on rent, which leases
-                are expiring, and how your properties are performing.
-              </p>
-
-              <div className="mt-10 space-y-6">
-                {[
-                  { icon: TrendingUp, title: "Collection rate at a glance", desc: "See what percentage of rent you've collected this month" },
-                  { icon: Bell, title: "Alerts that matter", desc: "Late payments, expiring leases, and overdue tasks front and center" },
-                  { icon: BarChart3, title: "Income vs expenses", desc: "Monthly breakdown of cash flow across all properties" },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    viewport={{ once: true }}
-                    className="flex items-start gap-4"
-                  >
-                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <item.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{item.title}</div>
-                      <div className="text-gray-600">{item.desc}</div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+      {/* Testimonial */}
+      <section className="py-32 px-6 bg-white border-t border-[#E5E5E5]">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="mb-10 text-[#2D2D2D] opacity-20">
+            <span className="text-6xl font-serif">“</span>
+          </div>
+          <h3 className="font-serif text-4xl md:text-6xl text-[#1A1A1A] leading-tight mb-16 tracking-tight">
+            It used to take me hours to reconcile my books. With LeaseLog, I'm done in minutes. It's the calmest part of my month.
+          </h3>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <div className="w-20 h-20 rounded-full overflow-hidden relative border-4 border-[#FBF9F6] shadow-xl">
+              <Image
+                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face"
+                alt="Sarah Jenkins"
+                fill
+                className="object-cover"
+              />
             </div>
-
-            {/* Mock Dashboard */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-gray-900 rounded-2xl p-6 shadow-2xl"
-            >
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-gray-800 rounded-lg">
-                  <div>
-                    <div className="text-gray-400 text-sm">December 2025</div>
-                    <div className="text-2xl font-bold text-white">$12,450</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-gray-400 text-sm">Outstanding</div>
-                    <div className="text-xl font-semibold text-red-400">$2,100</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-gray-300">Unit 2A - Johnson</span>
-                  </div>
-                  <span className="text-green-400 text-sm">Paid</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-gray-300">Unit 3B - Martinez</span>
-                  </div>
-                  <span className="text-green-400 text-sm">Paid</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                    <span className="text-gray-300">Unit 1C - Williams</span>
-                  </div>
-                  <span className="text-red-400 text-sm">5 days late</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                    <span className="text-gray-300">Unit 4D - Chen</span>
-                  </div>
-                  <span className="text-yellow-400 text-sm">Due today</span>
-                </div>
-              </div>
-            </motion.div>
+            <div className="text-center">
+              <div className="font-serif text-xl text-[#1A1A1A] font-bold mb-1">Sarah Jenkins</div>
+              <div className="font-sans text-xs tracking-widest uppercase text-[#666666]">Owner, 12 Units</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Trusted by landlords everywhere
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Join thousands of property owners who simplified their management
-            </p>
-          </div>
-
-          <InfiniteMovingCards
-            items={testimonials}
-            direction="right"
-            speed="slow"
-          />
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Frequently asked questions
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Everything you need to know about LeaseLog
-            </p>
-          </div>
-
-          <FAQ items={faqItems} />
-
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">Still have questions?</p>
-            <Link href="/faq">
-              <Button variant="outline">
-                View All FAQs
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Preview */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Simple pricing
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Pay based on how many properties you manage. That's it.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      {/* Pricing - Clean Cards */}
+      <section className="py-32 px-6 bg-[#FBF9F6] border-t border-[#E5E5E5]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Starter", price: 9, properties: "5", featured: false },
-              { name: "Pro", price: 29, properties: "25", featured: true },
-              { name: "Business", price: 79, properties: "Unlimited", featured: false },
+              { name: "Starter", price: "$9", units: "Up to 5 units" },
+              { name: "Pro", price: "$29", units: "Up to 25 units", active: true },
+              { name: "Business", price: "$79", units: "Unlimited units" },
             ].map((plan, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className={`relative rounded-2xl p-8 ${
-                  plan.featured
-                    ? "bg-gray-900 text-white ring-2 ring-blue-500"
-                    : "bg-white border border-gray-200"
-                }`}
+                whileHover={{ y: -8 }}
+                className={`flex flex-col justify-between p-10 rounded-2xl border transition-all duration-300 ${plan.active ? 'bg-[#1A1A1A] text-[#FBF9F6] border-[#1A1A1A] shadow-2xl shadow-[#1A1A1A]/20' : 'bg-white text-[#1A1A1A] border-[#E5E5E5] hover:border-[#1A1A1A]/20'}`}
               >
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-blue-600 text-white text-sm font-medium px-4 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <div className="text-lg font-medium">{plan.name}</div>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">${plan.price}</span>
-                  <span className={plan.featured ? "text-gray-400" : "text-gray-600"}>/mo</span>
+                <div>
+                  <h4 className={`font-serif text-2xl mb-2 ${plan.active ? 'text-white' : 'text-[#1A1A1A]'}`}>{plan.name}</h4>
+                  <div className={`font-sans text-sm mb-10 ${plan.active ? 'text-gray-400' : 'text-[#666666]'}`}>{plan.units}</div>
+                  <div className="font-serif text-6xl mb-10 tracking-tighter">{plan.price}<span className={`text-lg font-sans ${plan.active ? 'text-gray-500' : 'text-gray-400'}`}>/mo</span></div>
+                  <ul className="space-y-4">
+                    {["Tenant Portal", "Expense Tracking", "Lease Alerts"].map((f, j) => (
+                      <li key={j} className={`flex items-center gap-3 text-sm ${plan.active ? 'text-gray-300' : 'text-[#444444]'}`}>
+                        <Check className={`h-4 w-4 ${plan.active ? 'text-white' : 'text-[#1A1A1A]'}`} /> {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className={`text-sm mt-2 ${plan.featured ? "text-gray-400" : "text-gray-600"}`}>
-                  Up to {plan.properties} properties
-                </div>
-                <ul className="mt-8 space-y-4">
-                  {["Unlimited tenants", "Rent & expense tracking", "Lease alerts", "Reports"].map((feature, j) => (
-                    <li key={j} className="flex items-center gap-3 text-sm">
-                      <CheckCircle2 className={`h-5 w-5 ${plan.featured ? "text-blue-400" : "text-green-500"}`} />
-                      <span className={plan.featured ? "text-gray-300" : "text-gray-600"}>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/register" className="block mt-8">
-                  <Button
-                    className={`w-full ${
-                      plan.featured
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-gray-900 hover:bg-gray-800"
-                    }`}
-                  >
-                    Get Started
+                <Link href="/register" className="mt-12">
+                  <Button variant={plan.active ? 'secondary' : 'outline'} className={`w-full h-12 rounded-full tracking-wide text-xs uppercase font-bold transition-transform active:scale-95 ${plan.active ? 'bg-white text-black hover:bg-gray-200' : 'border-[#E5E5E5] hover:bg-[#1A1A1A] hover:text-white'}`}>
+                    Choose {plan.name}
                   </Button>
                 </Link>
               </motion.div>
             ))}
           </div>
-
-          <div className="text-center mt-12">
-            <p className="text-gray-500 mb-4">All plans include a 14-day free trial. No credit card required.</p>
-            <Link href="/pricing">
-              <Button variant="outline">
-                Compare All Plans
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
-
-      {/* Final CTA */}
-      <section className="py-24 bg-gray-950 relative overflow-hidden">
-        <Spotlight className="-top-40 -left-20" fill="rgba(59, 130, 246, 0.3)" />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-bold text-white"
-          >
-            Stop managing properties in your head
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            viewport={{ once: true }}
-            className="mt-4 text-lg text-gray-400"
-          >
-            LeaseLog keeps track so you don't have to. Start your free trial today.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
-            className="mt-8"
-          >
-            <Link href="/register">
-              <Button size="lg" className="text-base px-8 bg-white text-gray-900 hover:bg-gray-100">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-950 border-t border-gray-800 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Building2 className="h-6 w-6 text-gray-400" />
-                <span className="text-lg font-semibold text-gray-400">LeaseLog</span>
-              </div>
-              <p className="text-sm text-gray-500">
-                Property management made simple for landlords who self-manage.
-              </p>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-300 mb-4">Product</div>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><Link href="/features" className="hover:text-gray-300 transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-gray-300 transition-colors">Pricing</Link></li>
-                <li><Link href="/faq" className="hover:text-gray-300 transition-colors">FAQ</Link></li>
-              </ul>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-300 mb-4">Company</div>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-gray-300 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-gray-300 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-gray-300 transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-300 mb-4">Legal</div>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-gray-300 transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-gray-300 transition-colors">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} LeaseLog. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
